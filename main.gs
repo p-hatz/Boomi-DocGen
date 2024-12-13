@@ -7,19 +7,16 @@ function formatCurrentDate() {
 }
 
 function createDoc(pDocId) {
-  //const templateId = PropertiesService.getScriptProperties().getProperty('templateId');
   _fName = pDocId + '.tmp'
 
   const templateDoc = DriveApp.getFileById(pDocId)
   targetFile = templateDoc.makeCopy(pDocId);
   targetFileId = targetFile.getId()
-  //targetdoc = DocumentApp.openById(targetFileId);
 
   return targetFileId
 }
 
 function connInfo(pDocId) {
-  //const templateId = PropertiesService.getScriptProperties().getProperty('templateId');
   const _url = PropertiesService.getScriptProperties().getProperty('url');
   const _user = PropertiesService.getScriptProperties().getProperty('user');
   const _pass = PropertiesService.getScriptProperties().getProperty('pass');
@@ -41,7 +38,6 @@ function connInfo(pDocId) {
   _rowIdx = 1
 
   while (rs.next()) {
-    //var row = [];
     var _row = tbl.appendTableRow();
     
     _uuid = rs.getString('uuid')
@@ -85,7 +81,6 @@ function mapInfo(pDocId,pUUID) {
   _rowIdx = 1
 
   while (rs.next()) {
-    //var row = [];
     var _row = tbl.appendTableRow();
     
     _name = rs.getString('name')
@@ -258,9 +253,6 @@ function main(data) {
     actionType = actionType.toLowerCase()
   }
 
-  //Logger.log("workload: " + workload)
-  //Logger.log("start: " + actionType)
-  
   procMode = 'Unknown'
   if (workload == 'general' && actionType != 'listen') {
     procMode = 'non-Event'
@@ -304,6 +296,7 @@ function main(data) {
   connInfo(targetDocId);
   
   Logger.log("Processing Maps")
+  //this comes from the DB
   pUUID = '07d2ef3b-1227-407c-9b5c-cb2c953889eb'
   mapInfo(targetDocId,pUUID);
   
