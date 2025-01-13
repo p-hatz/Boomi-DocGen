@@ -7,16 +7,19 @@ function formatCurrentDate() {
 }
 
 function createDoc(pDocId) {
+  //const templateId = PropertiesService.getScriptProperties().getProperty('templateId');
   _fName = pDocId + '.tmp'
 
   const templateDoc = DriveApp.getFileById(pDocId)
   targetFile = templateDoc.makeCopy(pDocId);
   targetFileId = targetFile.getId()
+  //targetdoc = DocumentApp.openById(targetFileId);
 
   return targetFileId
 }
 
 function connInfo(pDocId) {
+  //const templateId = PropertiesService.getScriptProperties().getProperty('templateId');
   const _url = PropertiesService.getScriptProperties().getProperty('url');
   const _user = PropertiesService.getScriptProperties().getProperty('user');
   const _pass = PropertiesService.getScriptProperties().getProperty('pass');
@@ -27,7 +30,7 @@ function connInfo(pDocId) {
 
   _dbConn = Jdbc.getConnection(_url, _user, _pass);
   
-  _sql = "select vw.shapeType,c.uuid,c.ver,c.name,c.subType from vwProcessConnection vw inner join component c on vw.shapeUUID = c.uuid where shapeType = 'connectoraction'";
+  _sql = "select vw.shapeType,c.uuid,c.ver,c.name,c.subType,vw.opId,vw.opType from vwProcessConnection vw inner join component c on vw.shapeUUID = c.uuid where shapeType = 'connectoraction'";
   
   stmt = _dbConn.createStatement();
   rs = stmt.executeQuery(_sql);
@@ -38,6 +41,7 @@ function connInfo(pDocId) {
   _rowIdx = 1
 
   while (rs.next()) {
+    //var row = [];
     var _row = tbl.appendTableRow();
     
     _uuid = rs.getString('uuid')
@@ -51,6 +55,12 @@ function connInfo(pDocId) {
     
     _subType = rs.getString('subType')
     _row.appendTableCell(_subType);
+
+    _opId = rs.getString('opId')
+    _row.appendTableCell(_opId);
+
+    _opType = rs.getString('opType')
+    _row.appendTableCell(_opType);
   }
   
   rs.close();
@@ -81,6 +91,7 @@ function mapInfo(pDocId,pUUID) {
   _rowIdx = 1
 
   while (rs.next()) {
+    //var row = [];
     var _row = tbl.appendTableRow();
     
     _name = rs.getString('name')
@@ -152,6 +163,9 @@ function genDoc(pUUID,procName,procDescr,procMode,schedAll,pFName) {
   targetFile.saveAndClose
   targetFile.setName(fName);
   
+  //const folder = DriveApp.getFolderById('1Pkyc_u3fhCpDE_uBCKCMP50m56N9txt5')
+  //folder.createFile(targetFile);
+
   var elements = body.getParagraphs();
   
   for (var i = 0; i < elements.length; i++) {
@@ -183,6 +197,8 @@ function doPost(e) {
 }
 
 function main(data) {
+  //const templateId = PropertiesService.getScriptProperties().getProperty('templateId');
+  
   const boomiAtomSphereAPI = 'https://api.boomi.com/api/rest/v1/'
   const boomiAccount = PropertiesService.getScriptProperties().getProperty('boomiAccount');
   const resource = '/Component/'
@@ -192,6 +208,9 @@ function main(data) {
   
   _uuid = data.processId
   
+  //const _uuid = 'f50c35e7-96b7-4626-9d02-18644f259f7a'
+  //const _uuid = '66769d7b-f200-43c6-ab32-2d0386e7b32c';
+
   fName = 'Boomi Integration Spec. - ';
 
   apiUrl = _apiUrl + resource + _uuid
@@ -216,7 +235,7 @@ function main(data) {
     "Accept": "application/xml"
   };
 
-  apiRequestSched = '<QueryConfig xmlns="http://api.platform.boomi.com/"><QueryFilter><expression operator="and" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GroupingExpression"><nestedExpression operator="EQUALS" property="atomId" xsi:type="SimpleExpression"><argument>7f69061c-c731-4e3d-80b6-3f8be47d81d3</argument></nestedExpression><nestedExpression operator="EQUALS" property="processId" xsi:type="SimpleExpression"><argument>'
+  apiRequestSched = '<QueryConfig xmlns="http://api.platform.boomi.com/"><QueryFilter><expression operator="and" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GroupingExpression"><nestedExpression operator="EQUALS" property="atomId" xsi:type="SimpleExpression"><argument>{enterYourAtomId}</argument></nestedExpression><nestedExpression operator="EQUALS" property="processId" xsi:type="SimpleExpression"><argument>'
   apiRequestSched += _uuid + '</argument></nestedExpression></expression></QueryFilter></QueryConfig>'
 
   const optionsSched = {
@@ -260,19 +279,20 @@ function main(data) {
     procMode = 'Event'
   }
   
-  //Schedules
+//Schedules
   response = UrlFetchApp.fetch(apiUrlSched,optionsSched)
   jsonResponse = response.getContentText();
   
   var parsedData = JSON.parse(jsonResponse);
-  var sched = parsedData.result[0].Schedule;
-  if (parsedData.numberOfResults = 0.0) {
-    schedAll = "No schedules"
-  } else {
-    if (sched == '') {
-      schedAll = "No schedules"
-    } else {
-      var schedAll = "";
+  var _len;
+
+   _result = parsedData.result;
+   _len = _result.length;
+
+  //Logger.log(_len);
+  if (_len > 0.0) {
+    var sched = parsedData.result[0].Schedule;  
+    var schedAll = "";
         for (_idx = 0; _idx < sched.length; _idx++) {
           _sched = sched[_idx];
 
@@ -285,7 +305,8 @@ function main(data) {
 
           schedAll += "Schedule " + _idx + ": " + min + " " + hour + " " + " " + dayofMonth + " " + month + " " + year + " " + dayofWeek + "\n"
         }
-    }
+    } else {
+    schedAll = "No schedules"
   }
 
   Logger.log("Generating document...")
@@ -296,7 +317,6 @@ function main(data) {
   connInfo(targetDocId);
   
   Logger.log("Processing Maps")
-  //this comes from the DB
   pUUID = '07d2ef3b-1227-407c-9b5c-cb2c953889eb'
   mapInfo(targetDocId,pUUID);
   
