@@ -2,7 +2,7 @@ The objective is to populate a template using information from Boomi and a DB.
 
 ## Steps
 1. Create a Maria/MySQL/AuroraDB DB with the [DDL file](https://github.com/p-hatz/Boomi-DocGen/blob/main/MariaDB-DDL.sql); the tables will need to be populated with the required data
-2. Create a Google Apps Script using the [Google Script](https://github.com/p-hatz/Boomi-DocGen/blob/main/main.gs) (change `{enterYourAtomId}` to your runtime)
+2. Create a Google Apps Script using the [Google Script](https://github.com/p-hatz/Boomi-DocGen/blob/main/main.gs) (change `{enterYourAtomId}` for your runtime)
 3. Ensure you create the Apps Script Properties (Project Settings -> Script Properties)<br>
    `auth` (AtomSphere API password in Base64)<br>
    `boomiAccount` (AtomSphere Account)<br>
